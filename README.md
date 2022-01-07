@@ -43,8 +43,8 @@ tic
 29344935
 ```
 
-The example file `todo.csv` is a subset list of TESS planet candidates (TOIs), which we may be interested
-in learning how often a given system was observed for. Use the following command:
+The example file `todo.csv` is a subset list of TESS planet candidates (TOIs), which may be of interest
+to some folks so let's see how often systems were observed for. Use the following command:
 ```
 $ ticguide --file todo.csv
 
