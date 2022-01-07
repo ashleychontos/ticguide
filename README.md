@@ -25,13 +25,22 @@ $ ticguide --star 141810080
 
 ```
 
-You can also run on a csv file with targets
-currently implemented is using TIC id.
+If you have multiple targets, perhaps it might be more convenient to provide 
+a list of targets. Fortunately you can already does this with a csv file, where targets
+are listed by their TIC id (under `'tic'`).
 ```
 $ head todo.csv
 
-'tic'
-141810080
+tic
+231663901
+149603524
+336732616
+231670397
+144065872
+38846515
+92352620
+289793076
+29344935
 
 $ ticguide --file todo.csv
 
