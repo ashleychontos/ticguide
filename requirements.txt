@@ -1,0 +1,4 @@
+bs4
+numpy
+pandas>=1.0.5
+tqdm
