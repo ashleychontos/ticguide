@@ -41,7 +41,11 @@ tic
 92352620
 289793076
 29344935
+```
 
+The example file `todo.csv` is a subset list of TESS planet candidates (TOIs), which we may be interested
+in learning how often a given system was observed for. Use the following command:
+```
 $ ticguide --file todo.csv
 
 Writing my_tics_observed.csv.
