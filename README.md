@@ -26,8 +26,8 @@ $ ticguide --star 141810080
 ```
 
 If you have multiple targets, perhaps it might be more convenient to provide 
-a list of targets. Fortunately you can already does this with a csv file, where targets
-are listed by their TIC id (under `'tic'`).
+a list of targets. You can do this by providing a csv input file, with targets
+listed by their TIC id (under `'tic'`, one entry per line).
 ```
 $ head todo.csv
 
