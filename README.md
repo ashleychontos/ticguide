@@ -3,19 +3,21 @@
 Adapted from the TESS [``tvguide``](https://github.com/tessgi/tvguide) concept (see also [WTV](https://heasarc.gsfc.nasa.gov/cgi-bin/tess/webtess/wtv.py)), which would tell you if your target *should be* observed by TESS (i.e. in the future), this tool tells you if your target ***was*** already observed by TESS.
 
 ## Installation
-You can install using pip
+You can install using pip:
+
 ``` bash
 $ pip install ticguide
 ```
 
-or via the github repository
+or via the github repository:
+
 ``` bash
 $ git clone https://github.com/ashleychontos/ticguide.git
 $ cd ticguide
 $ python setup.py install
 ```
 
-The code has been tested in Python 3.6.
+The code has been tested in Python 3.6 and should be compatible with any operating system.
 
 ## Usage
 Pick your favorite star and have a whirl. I'm a big fan of Alpha Mensae or TIC 141810080.
