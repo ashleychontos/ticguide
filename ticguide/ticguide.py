@@ -262,7 +262,7 @@ def combine_sectors(args, observed={}, cols=[], all_tic=[],):
     return df
 
 
-def add_totals(df, args, reorder=[], d={}):
+def add_target_totals(df, args, reorder=[], d={}):
     """
     Adds
 
@@ -346,7 +346,7 @@ def get_observed_subset(df, args):
     df.set_index('tic', inplace=True)
     # Add totals, if desired
     if args.total:
-        df = add_totals(df, args)
+        df = add_target_totals(df, args)
     if args.save:
         df.to_csv(args.fname)
     return df
