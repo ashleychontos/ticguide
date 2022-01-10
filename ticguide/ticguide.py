@@ -4,10 +4,26 @@ from tqdm import tqdm
 from bs4 import BeautifulSoup
 import argparse, requests, glob, os, re
 
+import ticguide
 
 
-def main(args, cadences=['short','fast'], columns=['files','sectors'],
-         url='http://archive.stsci.edu/tess/bulk_downloads/bulk_downloads_ffi-tp-lc-dv.html'):
+def pipeline(args, url='http://archive.stsci.edu/tess/bulk_downloads/bulk_downloads_ffi-tp-lc-dv.html',
+             cadences=['short','fast'], columns=['files','sectors'],):
+    """
+    Main function call to run the `ticguide` search
+
+    Parameters
+    ----------
+    args : argparse.Namespace
+        the command line arguments
+    url : str
+        link to MAST bulk downloads page -> this should NOT need to be changed for any reason
+    cadences : List(str)
+        dlfkajd
+    columns: List(str)
+        dfjlda
+
+    """
 
     args.cadences, args.columns, args.url = cadences, columns, url
     # Check that the input is correct first
@@ -19,6 +35,23 @@ def main(args, cadences=['short','fast'], columns=['files','sectors'],
 
 
 def check_input(args):
+    """
+    Checks input arguments and returns `True` if the pipeline has enough information to run.
+    If an input csv is provided, this function will load in the csv and save the list of targets 
+    to args.stars
+
+    Parameters
+    ----------
+    args : argparse.Namespace
+        command-line arguments
+    args.fname : str
+        path to targets with updated observing information
+
+    Returns
+    -------
+    bool
+
+    """
 
     if not os.path.isfile(args.input):
         args.input = os.path.join(args.path,args.input)
@@ -39,7 +72,27 @@ def check_input(args):
 
 
 def check_table(args):
+    """
+    Before crossmatching the observed TESS target list with personal targets of interest, 
+    this function checks that the observed target list exists and is up-to-date (but there is
+    still work that needs to be done for this). The goal is to update this so that it will:
+    1) create and save the observed TESS targets if the file does not already exist,
+    2) otherwise it will check MAST for the current TESS sector and check if the column exists, and
+    3) add the new observing sector information if not already available. (TODO!!)
 
+    Parameters
+    ----------
+    args : argparse.Namespace
+        command-line arguments
+    args.output : str
+        path to csv file for all observed TESS targets
+
+    Returns
+    -------
+    df : pandas.DataFrame
+        pandas dataframe containing all targets observed in TESS short- and fast-cadence by 'tic' id
+
+    """
     # If the table does not already exist, it will make a new one
     # note: it asks this because it will take a little while to make
     # ** you can dl the table from my github repo to skip this **
@@ -61,12 +114,18 @@ def check_table(args):
 
 
 def make_table(args):
+    """
+    Creates a large dataframe for all targets observed by TESS in short- and fast-cadence
+    data. Given the success of TESS, we fortunately have many sectors so this step takes a few
+    minutes if creating the table from scratch. By default, it will save the table as a csv file 
+    (which is currently ~150 Mb).
 
+    """
     # Get observed targets
-    get_observed_tics(args)
+    get_observed_sectors(args)
 
     # Combine them into one large dataframe
-    df = get_observed_all(args)
+    df = combine_sectors(args)
 
     # Fill nan values
     df = df.fillna(False)
@@ -77,8 +136,13 @@ def make_table(args):
     return df
 
 
-def get_observed_tics(args, links=[]):
+def get_observed_sectors(args, links=[]):
+    """
+    Downloads bulk downloads scripts from MAST and iterates through these files to create
+    a complete list of observed TESS targets for a given sector and cadence. It will delete
+    the bash scripts when finished.
 
+    """
     # Start request session to webscrape
     s = requests.session()
     r = s.get(args.url, headers=dict(Referer=args.url))
@@ -115,8 +179,24 @@ def get_observed_tics(args, links=[]):
         os.remove(file)
 
 
-def get_observed_all(args, observed={}, cols=[], all_tic=[],):
+def combine_sectors(args, observed={}, cols=[], all_tic=[],):
+    """
+    Combines observed target lists by sectors and cadences into one large list/table. For now,
+    it iterates by file so it does not open up multiple files for each target. I am unsure if this 
+    is the most efficient way to do this (so TBD).
+    
+    Parameters
+    ----------
+    args : argparse.Namespace
+        command-line arguments
+    observed : dict
+        observed TESS target list container
+    cols : List(str)
+        array of column names for the final observed table
+    all_tic : List(int)
+        complete list of observed tics over all cadences -> which become the indices for the final observed table
 
+    """
     # Make dictionary to save file information for all current sectors+cadences
     for cadence in args.cadences:
         observed[cadence]={}
@@ -183,7 +263,10 @@ def get_observed_all(args, observed={}, cols=[], all_tic=[],):
 
 
 def add_totals(df, args, reorder=[], d={}):
+    """
+    Adds
 
+    """
     # add total number of sectors per target per cadence
     # add part to double check this with the other csvs
     for cadence in args.cadences:
@@ -205,7 +288,23 @@ def add_totals(df, args, reorder=[], d={}):
 
 
 def get_current_sector(args, sectors=[]):
+    """
+    NEED TO INCORPORATE WITH THE GET_OBSERVED_TICS FUNCTION TO SAVE TIME, SINCE all of this IS ALREADY DONE IN THAT MODULE
 
+    Parameters
+    ----------
+    args : argparse.Namespace
+        command-line arguments
+    sectors : List(int)
+        observed TESS target list filtered on the target(s) of interest
+    output : str
+        optional verbose output
+
+    Returns
+    -------
+    
+
+    """
     # Start request session to webscrape
     s = requests.session()
     r = s.get(args.url, headers=dict(Referer=args.url))
@@ -221,12 +320,19 @@ def get_current_sector(args, sectors=[]):
 
 
 def update_table(args):
+    """
+    NEED TO DO!
+
+    """
 
     pass
 
 
 def get_observed_subset(df, args):
+    """
+    
 
+    """
     # Filter on target(s) of interest
     filter_df = df[df['tic'].isin(args.stars)]
     df = filter_df.copy()
@@ -247,7 +353,20 @@ def get_observed_subset(df, args):
 
 
 def get_info(df, args, output=''):
+    """
+    Crossmatches the target(s) of interest with the complete observed target list and 
+    displays (i.e. prints) the relevant information if `args.verbose` is `True` (default).
 
+    Parameters
+    ----------
+    args : argparse.Namespace
+        command-line arguments
+    df : pandas.DataFrame
+        observed TESS target list filtered on the target(s) of interest
+    output : str
+        optional verbose output
+
+    """
     # Crossmatch full table with targets of interest
     df = get_observed_subset(df, args)
 
@@ -268,24 +387,3 @@ def get_info(df, args, output=''):
                 else:
                     output += '\n%d sector(s) of %s cadence\n'%(count, cadence)
         print(output+'\n\n')
-
-
-
-##########################################################################################
-#                                                                                        #
-#                                           CLI                                          #
-#                                                                                        #
-##########################################################################################
-
-
-
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='ticguide: quick + painless TESS observing information')
-    parser.add_argument('--file', '--in', '--input', metavar='path', help="input list of targets (requires csv with 'tic' column of integer type)", dest='input', default='todo.csv')
-    parser.add_argument('--out', '--output', metavar='path', help='path to save the observed TESS table for all targets', dest='output', default='all_observed.csv')
-    parser.add_argument('--path', metavar='path', help='path to directory', type=str, dest='path', default=os.path.join(os.path.abspath(os.getcwd()),''))
-    parser.add_argument('-s', '--save', help='disable the saving of output files', dest='save', default=True, action='store_false')
-    parser.add_argument('--star', '--stars', '--tic', metavar='star', help='TESS Input Catalog (TIC) IDs', type=int, dest='stars', nargs='*', default=None)
-    parser.add_argument('-t', '--total', help='include total sectors per target per cadence', dest='total', default=True, action='store_false')
-    parser.add_argument('-v', '--verbose', help='turn off verbose output', dest='verbose', default=True, action='store_false')
-    main(parser.parse_args())

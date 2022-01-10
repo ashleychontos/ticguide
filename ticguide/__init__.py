@@ -1,5 +1,5 @@
 import os
 
-__all__ = ['ticguide']
+__all__ = ['cli', 'ticguide']
 
-__version__ = '0.0.1'
+__version__ = '0.0.2'
