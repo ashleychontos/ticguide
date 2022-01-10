@@ -1,6 +1,7 @@
-import argparse
+import argparse, os
 
 import ticguide
+from ticguide import pipeline
 
 
 def main():
@@ -11,11 +12,11 @@ def main():
     )
     parser.add_argument('--version',
                         action='version',
-                        version="%(prog)s {}".format(tiguide.__version__),
+                        version="%(prog)s {}".format(ticguide.__version__),
                         help="print version number and exit",
     )
 
-    main_parser = argparse.ArgumentParser(add_help=False)
+    main_parser = argparse.ArgumentParser()
 
     main_parser.add_argument('--file', '--in', '--input', 
                              metavar='path', 
@@ -35,6 +36,12 @@ def main():
                              type=str, 
                              dest='path', 
                              default=os.path.join(os.path.abspath(os.getcwd()),''),
+    )
+    main_parser.add_argument('-p', '--progress', 
+                             help='disable the progress bar', 
+                             dest='progress', 
+                             default=True, 
+                             action='store_false',
     )
     main_parser.add_argument('-s', '--save', 
                              help='disable the saving of output files', 
@@ -63,7 +70,7 @@ def main():
                              action='store_false',
     )
 
-    main_parser.set_defaults(func=ticguide.pipeline)
+    main_parser.set_defaults(func=pipeline.main)
 
     args = main_parser.parse_args()
     args.func(args)

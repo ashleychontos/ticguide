@@ -34,7 +34,6 @@ setuptools.setup(
     ],
     install_requires=reqs,
     packages=setuptools.find_packages(),
-    package_data={"": ["dicts/*.dict"]},
     entry_points={'console_scripts':['ticguide=ticguide.cli:main']},
     python_requires=">=3.6",
 )

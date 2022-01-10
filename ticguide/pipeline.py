@@ -4,10 +4,8 @@ from tqdm import tqdm
 from bs4 import BeautifulSoup
 import argparse, requests, glob, os, re
 
-import ticguide
 
-
-def pipeline(args, url='http://archive.stsci.edu/tess/bulk_downloads/bulk_downloads_ffi-tp-lc-dv.html',
+def main(args, url='http://archive.stsci.edu/tess/bulk_downloads/bulk_downloads_ffi-tp-lc-dv.html',
              cadences=['short','fast'], columns=['files','sectors'],):
     """
     Main function call to run the `ticguide` search
@@ -237,7 +235,7 @@ def combine_sectors(args, observed={}, cols=[], all_tic=[],):
     df = pd.DataFrame(index=tics, columns=cols)
     # I think easiest way for now is to search by file, so we aren't opening 20+ files per target entry (but TBD)
     files = glob.glob('%s/*.txt'%args.path)
-    if args.verbose:
+    if args.verbose and args.progress:
         pbar = tqdm(total=len(files))
     for file in files:
         sector=int(file.split('/')[-1].split('.')[0].split('_')[1])
@@ -255,9 +253,9 @@ def combine_sectors(args, observed={}, cols=[], all_tic=[],):
             df.to_csv(args.output)
         else:
             os.remove(file)
-        if args.verbose:
+        if args.verbose and args.progress:
             pbar.update(1)
-    if args.verbose:
+    if args.verbose and args.progress:
         pbar.close()
     return df
 
