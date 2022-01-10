@@ -7,7 +7,7 @@ def main():
 
     parser = argparse.ArgumentParser(
                                      description='ticguide: quick + painless TESS observing information',
-                                     prog'ticguide',
+                                     prog='ticguide',
     )
     parser.add_argument('--version',
                         action='version',
