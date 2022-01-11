@@ -1,6 +1,6 @@
 # ``ticguide``: **quick + painless TESS observing information**
 
-Complementary to the TESS observing tool [``tvguide``](https://github.com/tessgi/tvguide) (see also [WTV](https://heasarc.gsfc.nasa.gov/cgi-bin/tess/webtess/wtv.py)), which tells you if your target *will be* observed by TESS (i.e. on silicon, guaranteed FFI coverage), this tool tells you if your target ***was**** observed by TESS in other cadences (i.e. short- and fast-cadence). * this draws from available MAST observations and therefore does not tell you about future sectors.
+Complementary to the TESS observing tool [``tvguide``](https://github.com/tessgi/tvguide) (see also [WTV](https://heasarc.gsfc.nasa.gov/cgi-bin/tess/webtess/wtv.py)), which tells you if your target *will be* observed by TESS (i.e. on silicon, guaranteed FFI coverage), this tool tells you if your target ***was**** observed by TESS in other cadences (i.e. short- and fast-cadence). * **this draws from available MAST observations and therefore does not inform you of upcoming sectors.**
 
 <ins>Please note</ins>: this pulls information from the MAST bulk downloads scripts, which therefore works for short- and fast-cadence observations. FFI observations are TBD but email me if you have any ideas -- I'm happy to discuss.
 
