@@ -96,7 +96,10 @@ def check_table(args):
     # ** you can dl the table from my github repo to skip this **
     if not os.path.exists(args.output):
         if args.verbose:
-            print('\n\nCreating full observed target list:')
+            if args.progress:
+                print('\nCreating full observed target list:')
+            else:
+                print('\nCreating master list of all observed TESS targets\n *note: this will take a couple minutes if running for the first time')
         df = make_table(args)
     # If there is a local copy, it will first check if it is up-to-date,
     # which is done by getting the latest sector from MAST and seeing if
@@ -371,7 +374,7 @@ def get_info(df, args, output=''):
     if args.verbose:
         for star in args.stars:
             tic = 'TIC %d'%star
-            output+='\n\n\n######################\n%s\n######################\n'%tic.center(22)
+            output+='\n######################\n%s\n######################\n'%tic.center(22)
             for cadence in args.cadences:
                 x = ''
                 count=0
