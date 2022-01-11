@@ -1,6 +1,6 @@
 # ``ticguide``: **quick + painless TESS observing information**
 
-Complementary to the TESS observing tool [``tvguide``](https://github.com/tessgi/tvguide) (see also [WTV](https://heasarc.gsfc.nasa.gov/cgi-bin/tess/webtess/wtv.py)), which tells you if your target *will be* observed by TESS (i.e. on silicon, guaranteed FFI coverage), this tool tells you if your target ***was**** observed by TESS in other cadences (i.e. short- and fast-cadence). * **this draws only from available MAST observations and therefore does not inform you of upcoming sectors.** (BUT if you know of a way to do this, let's chat!)
+Complementary to the TESS observing tool [``tvguide``](https://github.com/tessgi/tvguide) (see also [WTV](https://heasarc.gsfc.nasa.gov/cgi-bin/tess/webtess/wtv.py)), which tells you if your target *will be* observed by TESS (i.e. on silicon, guaranteed FFI coverage), this tool tells you if your target ***was**** observed by TESS in other cadences (i.e. short- and fast-cadence). * **this draws only from available MAST observations and therefore does not inform you of upcoming sectors.** 
 
 ## Installation
 You can install using pip:
@@ -43,17 +43,18 @@ optional arguments:
 ## Examples
 
 When running the command for the first time, the program will need to make a local copy of all observed
-TIC IDs (which is currently ~150 Mb, so this will take a few minutes). You have an option to disable the
-auto-saving of this table and it will still pass the pandas dataframe, but it will need to make this each
-time you run the program. Therefore if you use this often, I recommend letting it save a local csv file.
+TIC IDs (which is currently ~150 Mb, so this will take a few minutes depending on your computer). You have 
+an option to disable the auto-saving of this table and it will still pass the pandas dataframe, but it will 
+need to make this each time you run the program. Therefore if you use this often enough, I recommend letting 
+it save a local csv file.
 
-Example of running `ticguide` for the first time with the default settings:
+Example output when running `ticguide` for the first time with the default settings:
 
 ```
 $ ticguide --star 141810080
 
 Creating full observed target list:
-100%|███████████████████████████████████████████| 64/64 [03:46<00:00,  3.54s/it]
+100%|███████████████████████████████████████████| 64/64 [01:30<00:00,  1.41s/it]
 
 ##################################################
                   TIC 141810080                   
@@ -63,17 +64,17 @@ Creating full observed target list:
 -> observed in sector(s): 1, 2, 3, 4, 5, 6, 7, 8, 
                           9, 10, 11, 12, 13, 27, 
                           28, 29, 30, 31, 32, 33, 
-                          34, 35, 36, 37, 38, 39 
+                          34, 35, 36, 37, 38, 39, 
                                                 
 
 11 sectors(s) of fast cadence
 -> observed in sector(s): 29, 30, 31, 32, 33, 34, 
-                          35, 36, 37, 38, 39  
-                         
+                          35, 36, 37, 38, 39    
+
 ```
 
 ^^ as shown by the progress bar, the program iterated through 64 bash scripts. This 
-makes sense since TESS is currently on sector 45, which means there are 45 short-cadence 
+makes sense since if TESS is currently on sector 45, which means there are 45 short-cadence 
 and 19 fast-cadence sectors available (-> 45+19=64).
 
 Command line easily handles multiple TIC IDs by appending them to a list:
