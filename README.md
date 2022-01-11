@@ -118,46 +118,24 @@ $ ticguide --star 141810080 441462736 188768068
 ```
 
 If you have many many targets, you can instead provide a single-column txt or csv file, with targets
-listed by their TIC id (and one entry per line). If csv file is provided, kindly provide the 'tic' 
-column header for easier ingestion.
+listed by their TIC id (one entry per line).
 
 ```
 $ head todo.csv
 
 tic
-231663901
-149603524
-336732616
-231670397
-144065872
-38846515
-92352620
-289793076
-29344935
+141810080
+188768068
+441462736
 ```
 
-The example file `todo.csv` is a subset list of TESS planet candidates (TOIs), which may be of interest
-to some folks so let's see how often systems were observed for. Use the following command:
-```
-$ ticguide --file todo.csv
+A table is created using the subset list of tics (i.e. provided list) as the table indices and all unique
+combinations of cadences and sectors as the columns, filled with boolean values (i.e. if the target was
+observed in a specific cadence and sector). For example, the column "S027" is short-cadence sector 27 observations,
+whereas "F027" is the same sector but in fast cadence.
 
-Writing my_tics_observed.csv.
-
-$ head my_tics_observed.csv
-
-141810080, 
-
-```
-This new file appends two additional columns. The number in the first column is the minimum number of sectors the target is observable for and the second is the maximum.
-
-You can also run from within a Python script:
-```python
-import ticguide
-
-
-```
 
 ## Citation
-If you find this code useful and want to cite it in your research then we have made that possible for you
-```
+
+If you find this code useful and want to cite it in your research, let me know so I can get on that!
 
