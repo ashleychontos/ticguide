@@ -1,6 +1,6 @@
 # ``ticguide``: **quick + painless TESS observing information**
 
-Adapted from the TESS [``tvguide``](https://github.com/tessgi/tvguide) concept (see also [WTV](https://heasarc.gsfc.nasa.gov/cgi-bin/tess/webtess/wtv.py)), which would tell you if your target *should be* observed by TESS (i.e. in the future), this tool tells you if your target ***was*** already observed by TESS. 
+Complementary to the TESS observing tool [``tvguide``](https://github.com/tessgi/tvguide) (see also [WTV](https://heasarc.gsfc.nasa.gov/cgi-bin/tess/webtess/wtv.py)), which tells you if your target *will be* observed by TESS (i.e. on silicon, guaranteed FFI coverage), this tool tells you if your target ***was*** observed by TESS in other cadences (i.e. short- and fast-cadence). 
 
 <ins>Please note</ins>: this pulls information from the MAST bulk downloads scripts, which therefore works for short- and fast-cadence observations. FFI observations are TBD but email me if you have any ideas -- I'm happy to discuss.
 
@@ -25,44 +25,45 @@ Pick your favorite star and have a whirl. I happen to be a big fan of Alpha Mens
 ```
 $ ticguide --star 141810080
 
-
-
-######################
-    TIC 141810080     
-######################
+##################################################
+                  TIC 141810080                   
+##################################################
 
 26 sectors(s) of short cadence
--> observed in sector(s): 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39
+-> observed in sector(s): 1, 2, 3, 4, 5, 6, 7, 8, 
+                          9, 10, 11, 12, 13, 27, 
+                          28, 29, 30, 31, 32, 33, 
+                          34, 35, 36, 37, 38, 39, 
+                                                
 
 11 sectors(s) of fast cadence
--> observed in sector(s): 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39
-
-
-
-$
+-> observed in sector(s): 29, 30, 31, 32, 33, 34, 
+                          35, 36, 37, 38, 39  
 ```
 
 Command line easily hands multiple TIC IDs by appending them to a list:
+
 ```
 $ ticguide --star 141810080 441462736 188768068
 
-
-
-######################
-    TIC 141810080     
-######################
+##################################################
+                  TIC 141810080                   
+##################################################
 
 26 sectors(s) of short cadence
--> observed in sector(s): 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39
+-> observed in sector(s): 1, 2, 3, 4, 5, 6, 7, 8, 
+                          9, 10, 11, 12, 13, 27, 
+                          28, 29, 30, 31, 32, 33, 
+                          34, 35, 36, 37, 38, 39, 
+                                                
 
 11 sectors(s) of fast cadence
--> observed in sector(s): 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39
+-> observed in sector(s): 29, 30, 31, 32, 33, 34, 
+                          35, 36, 37, 38, 39    
 
-
-
-######################
-    TIC 441462736     
-######################
+##################################################
+                  TIC 441462736                   
+##################################################
 
 2 sectors(s) of short cadence
 -> observed in sector(s): 2, 29
@@ -70,20 +71,15 @@ $ ticguide --star 141810080 441462736 188768068
 1 sectors(s) of fast cadence
 -> observed in sector(s): 29
 
-
-
-######################
-    TIC 188768068     
-######################
+##################################################
+                  TIC 188768068                   
+##################################################
 
 6 sectors(s) of short cadence
 -> observed in sector(s): 17, 20, 24, 25, 26, 40
 
 1 sectors(s) of fast cadence
 -> observed in sector(s): 40
-
-
-$
 ```
 
 When the list of targets starts to be on the order of 10 or more, it is probably less helpful
