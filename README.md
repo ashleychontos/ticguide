@@ -19,9 +19,9 @@ $ cd ticguide
 $ python setup.py install
 ```
 
-## Usage
+## Examples
 
-Pick your favorite star and have a whirl. I happen to be a big fan of Alpha Mensae:
+Choose your favorite star and have a go. I happen to be a big fan of naked-eye solar analog Alpha Mensae:
 ```
 $ ticguide --star 141810080
 
