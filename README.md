@@ -76,7 +76,7 @@ Creating full observed target list:
 since TESS is currently on sector 45, which means there are 45 short-cadence and 19 
 fast-cadence sectors available (-> 45+19=64).
 
-Command line easily hands multiple TIC IDs by appending them to a list:
+Command line easily handles multiple TIC IDs by appending them to a list:
 
 ```
 $ ticguide --star 141810080 441462736 188768068
@@ -117,18 +117,7 @@ $ ticguide --star 141810080 441462736 188768068
 -> observed in sector(s): 40
 ```
 
-When the list of targets starts to be on the order of 10 or more, it is probably less helpful
-to print the output in the terminal. This can be supressed by using the `--verbose` (or `-v`) 
-command:
-
-```
-$ ticguide --star 141810080 -v
-
-```
-
-
-If you have many targets, perhaps it might be more convenient to provide 
-a list of targets via a csv file. You can easily do this by providing a single-column csv, with targets
+If you have many many targets, you can instead provide a single-column csv, with targets
 listed by their TIC id (under `'tic'`, one entry per line).
 ```
 $ head todo.csv
