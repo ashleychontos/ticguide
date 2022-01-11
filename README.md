@@ -1,8 +1,6 @@
 # ``ticguide``: **quick + painless TESS observing information**
 
-Complementary to the TESS observing tool [``tvguide``](https://github.com/tessgi/tvguide) (see also [WTV](https://heasarc.gsfc.nasa.gov/cgi-bin/tess/webtess/wtv.py)), which tells you if your target *will be* observed by TESS (i.e. on silicon, guaranteed FFI coverage), this tool tells you if your target ***was**** observed by TESS in other cadences (i.e. short- and fast-cadence). * **this draws from available MAST observations and therefore does not inform you of upcoming sectors.**
-
-<ins>Please note</ins>: this pulls information from the MAST bulk downloads scripts, which therefore works for short- and fast-cadence observations. FFI observations are TBD but email me if you have any ideas -- I'm happy to discuss.
+Complementary to the TESS observing tool [``tvguide``](https://github.com/tessgi/tvguide) (see also [WTV](https://heasarc.gsfc.nasa.gov/cgi-bin/tess/webtess/wtv.py)), which tells you if your target *will be* observed by TESS (i.e. on silicon, guaranteed FFI coverage), this tool tells you if your target ***was**** observed by TESS in other cadences (i.e. short- and fast-cadence). * **this draws only from available MAST observations and therefore does not inform you of upcoming sectors.** (BUT if you know of a way to do this, let's chat!)
 
 ## Installation
 You can install using pip:
@@ -75,8 +73,8 @@ Creating full observed target list:
 ```
 
 ^^ as shown by the progress bar, it iterated through 64 bash scripts. This makes sense
-since TESS is currently on sector 45, which means there are 45 short-cadence and 19 fast-
-cadence sectors available (-> 45+19=64).
+since TESS is currently on sector 45, which means there are 45 short-cadence and 19 
+fast-cadence sectors available (-> 45+19=64).
 
 Command line easily hands multiple TIC IDs by appending them to a list:
 
