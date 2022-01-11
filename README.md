@@ -117,8 +117,10 @@ $ ticguide --star 141810080 441462736 188768068
 -> observed in sector(s): 40
 ```
 
-If you have many many targets, you can instead provide a single-column csv, with targets
-listed by their TIC id (under `'tic'`, one entry per line).
+If you have many many targets, you can instead provide a single-column txt or csv file, with targets
+listed by their TIC id (and one entry per line). If csv file is provided, kindly provide the 'tic' 
+column header for easier ingestion.
+
 ```
 $ head todo.csv
 
