@@ -49,7 +49,7 @@ TIC IDs (which is currently ~150 Mb, so this will take a few minutes). You have 
 auto-saving of this table and it will still pass the pandas dataframe, but it will need to make this each
 time you run the program. Therefore if you use this often, I recommend letting it save a local csv file.
 
-Example of running `ticguide` for the first time using the default settings:
+Example of running `ticguide` for the first time with the default settings:
 
 ```
 $ ticguide --star 141810080
