@@ -72,11 +72,11 @@ Creating full observed target list:
                          
 ```
 
-^^ as shown by the progress bar, it iterated through 64 bash scripts. This makes sense
-since TESS is currently on sector 45, which means there are 45 short-cadence and 19 
-fast-cadence sectors available (-> 45+19=64).
+^^ as shown by the progress bar, the program iterated through 64 bash scripts. This 
+makes sense since TESS is currently on sector 45, which means there are 45 short-cadence 
+and 19 fast-cadence sectors available (-> 45+19=64).
 
-Command line easily hands multiple TIC IDs by appending them to a list:
+Command line easily handles multiple TIC IDs by appending them to a list:
 
 ```
 $ ticguide --star 141810080 441462736 188768068
@@ -117,56 +117,25 @@ $ ticguide --star 141810080 441462736 188768068
 -> observed in sector(s): 40
 ```
 
-When the list of targets starts to be on the order of 10 or more, it is probably less helpful
-to print the output in the terminal. This can be supressed by using the `--verbose` (or `-v`) 
-command:
+If you have many many targets, you can instead provide a single-column txt or csv file, with targets
+listed by their TIC id (one entry per line).
 
-```
-$ ticguide --star 141810080 -v
-
-```
-
-
-If you have many targets, perhaps it might be more convenient to provide 
-a list of targets via a csv file. You can easily do this by providing a single-column csv, with targets
-listed by their TIC id (under `'tic'`, one entry per line).
 ```
 $ head todo.csv
 
 tic
-231663901
-149603524
-336732616
-231670397
-144065872
-38846515
-92352620
-289793076
-29344935
+141810080
+188768068
+441462736
 ```
 
-The example file `todo.csv` is a subset list of TESS planet candidates (TOIs), which may be of interest
-to some folks so let's see how often systems were observed for. Use the following command:
-```
-$ ticguide --file todo.csv
+A boolean table is created using the provided list of targets (TICs) as the table indices and all unique
+combinations of the cadences and sectors as columns, where `True` would mean a given TIC was observed in the listed
+cadence and sector. For example, the column "S027" means short-cadence sector 27 observations, whereas "F027" is the 
+same sector but in fast cadence.
 
-Writing my_tics_observed.csv.
-
-$ head my_tics_observed.csv
-
-141810080, 
-
-```
-This new file appends two additional columns. The number in the first column is the minimum number of sectors the target is observable for and the second is the maximum.
-
-You can also run from within a Python script:
-```python
-import ticguide
-
-
-```
 
 ## Citation
-If you find this code useful and want to cite it in your research then we have made that possible for you
-```
+
+If you find this code useful and want to cite it in your research, let me know so I can get on that!
 
