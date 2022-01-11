@@ -60,11 +60,17 @@ def check_input(args):
     # If no targets are provided via CLI, check for todo file
     if args.stars is None:
         if os.path.exists(args.input):
-            df = pd.read_csv(args.input)
-            args.stars = [int(tic) for tic in df.tic.values.tolist()]
+            if args.input.split('/')[-1].split('.')[-1] == 'csv':
+                df = pd.read_csv(args.input)
+                args.stars = [int(tic) for tic in df.tic.values.tolist()]
+            elif args.input.split('/')[-1].split('.')[-1] == 'txt':
+                with open (args.input, "r") as f:
+                    args.stars = [int(line.strip()) for line in f.readlines() if line[0].isnumeric()]
+            else:
+                print('\nERROR: Did not understand input file type. Please try again.\n')
         else:
             print('\nERROR: No targets were provided')
-            print('*** please either provide entries via command line \n    or an input csv file with a list of TICs (via todo.csv) ***')
+            print('*** please either provide entries via command line \n    or an input csv file with a list of TICs (via todo.csv) ***\n')
             return False
     return True
 
@@ -396,9 +402,10 @@ def get_info(df, args, output=''):
                                 if c == 0:
                                     output += '%s\n'%p
                                 else:
-                                    output += '%s\n'%(p.rjust(50))
+                                    output += '%s%s\n'%(' '*26, p.ljust(22))
                                 p = ''
                                 c += 1
+                        output += '%s%s\n'%(' '*26, p[:-2].ljust(22))
                 else:
                     output += '\n%d sector(s) of %s cadence\n'%(count, cadence)
         print(output)
