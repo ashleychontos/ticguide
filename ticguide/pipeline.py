@@ -55,15 +55,12 @@ def check_input(args):
         args.input = os.path.join(args.path,args.input)
     if not os.path.isfile(args.output):
         args.output = os.path.join(args.path,args.output)
-    args.fname = os.path.join(args.path,'my_tics_observed.csv')
+    args.fname = os.path.join(args.path,'my_observed_tics.csv')
 
     # If no targets are provided via CLI, check for todo file
     if args.stars is None:
         if os.path.exists(args.input):
-            if args.input.split('/')[-1].split('.')[-1] == 'csv':
-                df = pd.read_csv(args.input)
-                args.stars = [int(tic) for tic in df.tic.values.tolist()]
-            elif args.input.split('/')[-1].split('.')[-1] == 'txt':
+            if args.input.split('/')[-1].split('.')[-1] == 'csv' or args.input.split('/')[-1].split('.')[-1] == 'txt':
                 with open (args.input, "r") as f:
                     args.stars = [int(line.strip()) for line in f.readlines() if line[0].isnumeric()]
             else:
