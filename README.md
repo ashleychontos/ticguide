@@ -74,6 +74,10 @@ Creating full observed target list:
                          
 ```
 
+^^ as shown by the progress bar, it iterated through 64 bash scripts. This makes sense
+since TESS is currently on sector 45, which means there are 45 short-cadence and 19 fast-
+cadence sectors available (-> 45+19=64).
+
 Command line easily hands multiple TIC IDs by appending them to a list:
 
 ```
