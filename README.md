@@ -131,8 +131,8 @@ tic
 
 A boolean table is created using the provided list of targets (TICs) as the table indices and all unique
 combinations of the cadences and sectors as columns, where `True` would mean a given TIC was observed in the listed
-cadence and sector. For a column example, "S027" is short-cadence sector 27 observations, whereas "F027" is the same 
-sector but in fast cadence.
+cadence and sector. For example, the column "S027" means short-cadence sector 27 observations, whereas "F027" is the 
+same sector but in fast cadence.
 
 
 ## Citation
