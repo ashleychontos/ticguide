@@ -374,7 +374,7 @@ def get_info(df, args, output=''):
     if args.verbose:
         for star in args.stars:
             tic = 'TIC %d'%star
-            output+='\n######################\n%s\n######################\n'%tic.center(22)
+            output+='\n##################################################\n%s\n##################################################\n'%tic.center(50)
             for cadence in args.cadences:
                 x = ''
                 count=0
@@ -384,7 +384,21 @@ def get_info(df, args, output=''):
                         x += '%d, '%int(column[1:])
                         count+=1
                 if count != 0:
-                    output += '\n%d sectors(s) of %s cadence\n-> observed in sector(s): %s\n'%(count,cadence,x[:-2])
+                    output += '\n%d sectors(s) of %s cadence\n-> observed in sector(s): '%(count,cadence)
+                    if len(x[:-2]) <= 22:
+                        output += '%s\n'%x[:-2]
+                    else:
+                        p = ''
+                        c = 0
+                        for each in x[:-2].split(', '):
+                            p+='%s, '%each
+                            if len(p) > 22:
+                                if c == 0:
+                                    output += '%s\n'%p
+                                else:
+                                    output += '%s\n'%(p.rjust(50))
+                                p = ''
+                                c += 1
                 else:
                     output += '\n%d sector(s) of %s cadence\n'%(count, cadence)
-        print(output+'\n\n')
+        print(output)
