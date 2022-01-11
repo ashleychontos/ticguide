@@ -2,7 +2,7 @@
 
 Adapted from the TESS [``tvguide``](https://github.com/tessgi/tvguide) concept (see also [WTV](https://heasarc.gsfc.nasa.gov/cgi-bin/tess/webtess/wtv.py)), which would tell you if your target *should be* observed by TESS (i.e. in the future), this tool tells you if your target ***was*** already observed by TESS. 
 
-<ins>Please note</ins>: this pulls information from the MAST bulk downloads scripts, which therefore works for short- and fast-cadence observations. FFI observations are TBD but email me if you have any ideas -- I'm happy to implement.
+<ins>Please note</ins>: this pulls information from the MAST bulk downloads scripts, which therefore works for short- and fast-cadence observations. FFI observations are TBD but email me if you have any ideas -- I'm happy to discuss.
 
 ## Installation
 You can install using pip:
@@ -20,15 +20,84 @@ $ python setup.py install
 ```
 
 ## Usage
-Pick your favorite star and have a whirl. I'm a big fan of Alpha Mensae or TIC 141810080.
+
+Pick your favorite star and have a whirl. I happen to be a big fan of Alpha Mensae:
 ```
 $ ticguide --star 141810080
 
 
+
+######################
+    TIC 141810080     
+######################
+
+26 sectors(s) of short cadence
+-> observed in sector(s): 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39
+
+11 sectors(s) of fast cadence
+-> observed in sector(s): 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39
+
+
+
+$
 ```
 
-If you have multiple targets, perhaps it might be more convenient to provide 
-a list of targets. You can do this by providing a csv input file, with targets
+Command line easily hands multiple TIC IDs by appending them to a list:
+```
+$ ticguide --star 141810080 441462736 188768068
+
+
+
+######################
+    TIC 141810080     
+######################
+
+26 sectors(s) of short cadence
+-> observed in sector(s): 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39
+
+11 sectors(s) of fast cadence
+-> observed in sector(s): 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39
+
+
+
+######################
+    TIC 441462736     
+######################
+
+2 sectors(s) of short cadence
+-> observed in sector(s): 2, 29
+
+1 sectors(s) of fast cadence
+-> observed in sector(s): 29
+
+
+
+######################
+    TIC 188768068     
+######################
+
+6 sectors(s) of short cadence
+-> observed in sector(s): 17, 20, 24, 25, 26, 40
+
+1 sectors(s) of fast cadence
+-> observed in sector(s): 40
+
+
+$
+```
+
+When the list of targets starts to be on the order of 10 or more, it is probably less helpful
+to print the output in the terminal. This can be supressed by using the `--verbose` (or `-v`) 
+command:
+
+```
+$ ticguide --star 141810080 -v
+
+```
+
+
+If you have many targets, perhaps it might be more convenient to provide 
+a list of targets via a csv file. You can easily do this by providing a single-column csv, with targets
 listed by their TIC id (under `'tic'`, one entry per line).
 ```
 $ head todo.csv
