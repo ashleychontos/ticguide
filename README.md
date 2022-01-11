@@ -19,11 +19,43 @@ $ cd ticguide
 $ python setup.py install
 ```
 
+You can check your installation with the help command:
+
+```
+$ ticguide --help
+usage: ticguide [-h] [--file path] [--out path] [--path path] [-p] [-s]
+                [--star [star [star ...]]] [-t] [-v]
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --file path, --in path, --input path
+                        input list of targets (requires csv with 'tic' column
+                        of integer type)
+  --out path, --output path
+                        path to save the observed TESS table for all targets
+  --path path           path to directory
+  -p, --progress        disable the progress bar
+  -s, --save            disable the saving of output files
+  --star [star [star ...]], --stars [star [star ...]], --tic [star [star ...]]
+                        TESS Input Catalog (TIC) IDs
+  -t, --total           include total sectors per target per cadence
+  -v, --verbose         turn off verbose output
+```
+
 ## Examples
 
-Choose your favorite star and have a go. I happen to be a big fan of naked-eye solar analog Alpha Mensae:
+When running the command for the first time, the program will need to make a local copy of all observed
+TIC IDs (which is currently ~150 Mb, so this will take a few minutes). You have an option to disable the
+auto-saving of this table and it will still pass the pandas dataframe, but it will need to make this each
+time you run the program. Therefore if you use this often, I recommend letting it save a local csv file.
+
+Example of running `ticguide` for the first time using the default settings:
+
 ```
 $ ticguide --star 141810080
+
+Creating full observed target list:
+100%|███████████████████████████████████████████| 64/64 [03:46<00:00,  3.54s/it]
 
 ##################################################
                   TIC 141810080                   
@@ -33,12 +65,13 @@ $ ticguide --star 141810080
 -> observed in sector(s): 1, 2, 3, 4, 5, 6, 7, 8, 
                           9, 10, 11, 12, 13, 27, 
                           28, 29, 30, 31, 32, 33, 
-                          34, 35, 36, 37, 38, 39, 
+                          34, 35, 36, 37, 38, 39 
                                                 
 
 11 sectors(s) of fast cadence
 -> observed in sector(s): 29, 30, 31, 32, 33, 34, 
                           35, 36, 37, 38, 39  
+                         
 ```
 
 Command line easily hands multiple TIC IDs by appending them to a list:
