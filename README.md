@@ -72,9 +72,9 @@ Creating full observed target list:
                          
 ```
 
-^^ as shown by the progress bar, it iterated through 64 bash scripts. This makes sense
-since TESS is currently on sector 45, which means there are 45 short-cadence and 19 
-fast-cadence sectors available (-> 45+19=64).
+^^ as shown by the progress bar, the program iterated through 64 bash scripts. This 
+makes sense since TESS is currently on sector 45, which means there are 45 short-cadence 
+and 19 fast-cadence sectors available (-> 45+19=64).
 
 Command line easily handles multiple TIC IDs by appending them to a list:
 
@@ -129,10 +129,10 @@ tic
 441462736
 ```
 
-A table is created using the subset list of tics (i.e. provided list) as the table indices and all unique
-combinations of cadences and sectors as the columns, filled with boolean values (i.e. if the target was
-observed in a specific cadence and sector). For example, the column "S027" is short-cadence sector 27 observations,
-whereas "F027" is the same sector but in fast cadence.
+A boolean table is created using the provided list of targets (TICs) as the table indices and all unique
+combinations of the cadences and sectors as columns, where `True` would mean a given TIC was observed in the listed
+cadence and sector. For a column example, "S027" is short-cadence sector 27 observations, whereas "F027" is the same 
+sector but in fast cadence.
 
 
 ## Citation
