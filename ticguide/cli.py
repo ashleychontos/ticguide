@@ -20,7 +20,7 @@ def main():
 
     main_parser.add_argument('--file', '--in', '--input', 
                              metavar='path', 
-                             help="input list of targets (requires csv with 'tic' column of integer type)", 
+                             help="input list of targets (currently works with txt or csv files)", 
                              dest='input', 
                              default='todo.csv',
     )
