@@ -58,10 +58,10 @@ def main():
                              default=None,
     )
     main_parser.add_argument('-t', '--total', 
-                             help='include total sectors per target per cadence', 
+                             help='save the total number of sectors targets were observed in a specific cadence', 
                              dest='total', 
-                             default=True, 
-                             action='store_false',
+                             default=False, 
+                             action='store_true',
     )
     main_parser.add_argument('-v', '--verbose', 
                              help='turn off verbose output', 

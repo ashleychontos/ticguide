@@ -235,7 +235,7 @@ def combine_sectors(args, observed={}, cols=[], all_tic=[],):
         s = pd.Series(series, name='n_sectors')
         s.index.name = 'tic'
         s.sort_values(ascending=False, inplace=True)
-        if args.save:
+        if args.save and args.total:
             s.to_csv('%s/totals_%s.csv'%(args.path,cadence))
         all_tic += s.index.values.tolist()
 
@@ -258,10 +258,7 @@ def combine_sectors(args, observed={}, cols=[], all_tic=[],):
         tics = [int(line.strip()) for line in lines]
         for tic in tics:
             df.loc[tic,column]=True
-        if args.save:
-            df.to_csv(args.output)
-        else:
-            os.remove(file)
+        os.remove(file)
         if args.verbose and args.progress:
             pbar.update(1)
     if args.verbose and args.progress:
@@ -351,9 +348,8 @@ def get_observed_subset(df, args):
     df = df_all.astype({'tic':'int64'})
     df = df.fillna(False)
     df.set_index('tic', inplace=True)
-    # Add totals, if desired
-    if args.total:
-        df = add_target_totals(df, args)
+    # Add total counts
+    df = add_target_totals(df, args)
     if args.save:
         df.to_csv(args.fname)
     return df
