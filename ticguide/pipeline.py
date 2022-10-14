@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 from tqdm import tqdm
 from bs4 import BeautifulSoup
-import argparse, requests, glob, os, re
+import argparse, subprocess, requests, glob, os, re
 
 
 def main(args, url='http://archive.stsci.edu/tess/bulk_downloads/bulk_downloads_ffi-tp-lc-dv.html',
@@ -99,13 +99,10 @@ def update_observations(args):
     """
     # get available observing info from MAST
     args = get_mast_info(args)
-
     # get new sector information
     args = get_sectors(args)
-
     # merge with existing information
     df = merge_sectors(args)
-
     return df
 
 
@@ -142,7 +139,6 @@ def get_mast_info(args):
     """
     # Start request session to pull information from MAST
     s, soup = make_soup(args)
-
     # Iterate through links on website and append relevant ones to dict
     for l in soup.find_all("a", href=re.compile('lc.sh')):
         sector = int(l.get('href').split('/')[-1].split('.')[0].split('_')[2])
@@ -152,7 +148,7 @@ def get_mast_info(args):
             cadence='short'
         if '%s%03d'%(cadence[0].upper(),sector) not in args.mast:
             args.mast['%s%03d'%(cadence[0].upper(),sector)] = {}
-            args.mast['%s%03d'%(cadence[0].upper(),sector)].update({'link':'%s%s'%('/'.join(args.url.split('/')[:3]),l.get('href'))})
+        args.mast['%s%03d'%(cadence[0].upper(),sector)].update({'link':'%s%s'%('/'.join(args.url.split('/')[:3]),l.get('href'))})
     observed = set([x for x in args.mast])
     args.reorder = sorted(observed)
 
@@ -348,6 +344,34 @@ def get_info(df, args, output='', line_length=50):
     """
     # Crossmatch full table with targets of interest
     df = get_observed_subset(df, args)
+    if args.download:
+        make_script(df)
+
+
+def make_script(df, args, script='#!/bin/sh\n'):
+    import subprocess
+    # remake soup
+    s, soup = make_soup(args)
+    # set by tic for easier searching
+    df.set_index('tic', inplace=True, drop=True)
+    drop = [col for col in df.columns.values.tolist() if 'TOT' in col]
+    df.drop(columns=drop, inplace=True)
+    # easiest way is to iterate through scripts to prevent opening same file several times
+    for sector in args.mast:
+        response = s.get(args.mast[sector]['link'])
+        with open('%s/%s'%(args.path,args.mast[sector]['link'].split('/')[-1]), "wb") as file:
+            file.write(response.content)
+        with open('%s/%s'%(args.path,args.mast[sector]['link'].split('/')[-1]), "r") as sh:
+            lines = sh.readlines()
+        os.remove('%s/%s'%(args.path,args.mast[key]['link'].split('/')[-1]))
+        tics=[int(line.split()[5].split('-')[2]) for line in lines[1:]]
+        indices = df.index[df[sector]].values.tolist()
+        for idx in indices:
+            find = tics.index(idx)
+            script += '%s\n'%lines[find+1]
+    with open('%s/%s.sh'%(args.path,args.fname.split('.csv')[0]), "wb") as file:
+        file.write(script)
+    subprocess.call(['%s/%s.sh'%(args.path,args.fname.split('.csv')[0])],shell=True)
 
 
 def get_final_output(args, output='', line_length=50):

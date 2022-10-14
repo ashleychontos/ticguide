@@ -17,11 +17,17 @@ def main():
     )
 
     main_parser = argparse.ArgumentParser()
-    main_parser.add_argument('--fast','-f', 
-                             help='Check for fast (20-second) cadence data', 
-                             dest='fast', 
+    main_parser.add_argument('--download','-d', 
+                             help='Download data for targets of interest', 
+                             dest='download', 
                              default=False, 
                              action='store_true',
+    )
+    main_parser.add_argument('--fast','-f', 
+                             help='Do not search for fast (20-second) cadence data', 
+                             dest='fast', 
+                             default=True, 
+                             action='store_false',
     )
     main_parser.add_argument('--file','--in','--input', 
                              metavar='path', 
@@ -55,10 +61,10 @@ def main():
                              action='store_false',
     )
     main_parser.add_argument('--short','-s', 
-                             help='Check for short (2-minute) cadence data', 
+                             help='Do not check for short (2-minute) cadence data', 
                              dest='short', 
-                             default=False, 
-                             action='store_true',
+                             default=True, 
+                             action='store_false',
     )
     main_parser.add_argument('--star','--stars','--tic', 
                              metavar='star', 

@@ -1,24 +1,16 @@
-import re
 import setuptools
 
-def get_property(prop, project):
-    result = re.search(r'{}\s*=\s*[\'"]([^\'"]*)[\'"]'.format(prop),
-                       open(project+'/__init__.py').read())
-    return result.group(1)
+exec(open("ticguide/version.py").read())
 
 with open("README.md", "r", encoding="utf-8") as file:
     long_description = file.read()
-
-reqs = []
-for line in open('requirements.txt', 'r').readlines():
-    reqs.append(line)
 
 setuptools.setup(
     name="ticguide",
     version=get_property('__version__', 'ticguide'),
     license="MIT",
     author="Ashley Chontos",
-    author_email="achontos@hawaii.edu",
+    author_email="ashleychontos@astro.princeton.edu",
     description="quick + painless TESS observing information",
     long_description=long_description,
     long_description_content_type="text/markdown",
@@ -32,7 +24,12 @@ setuptools.setup(
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ],
-    install_requires=reqs,
+    install_requires = [
+        'numpy',
+        'pandas>=1.0.5',
+        'tqdm',
+        'bs4',
+    ],
     packages=setuptools.find_packages(),
     entry_points={'console_scripts':['ticguide=ticguide.cli:main']},
     python_requires=">=3.6",
