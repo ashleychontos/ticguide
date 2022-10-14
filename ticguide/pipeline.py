@@ -6,7 +6,7 @@ import argparse, subprocess, requests, glob, os, re
 
 
 def main(args, url='http://archive.stsci.edu/tess/bulk_downloads/bulk_downloads_ffi-tp-lc-dv.html',
-         cadences=['fast','short'], columns=['files','sectors']):
+         cadences=['fast','short']):
     """
     Main function call to run the `ticguide` search
 
@@ -14,15 +14,17 @@ def main(args, url='http://archive.stsci.edu/tess/bulk_downloads/bulk_downloads_
     ----------
     args : argparse.Namespace
         the command line arguments
-    url : str
+    args.url : str
         link to MAST bulk downloads page -> this should NOT need to be changed for any reason
-    cadences : List(str)
-        dlfkajd
-    columns: List(str)
-        dfjlda
+    args.cadences : List(str)
+        cadence for observations of interest, default~['short','fast']
+    args.mast : Dict(str)
+        dictionary
+    args.all_tic : List(int)
+        full list of observed TIC ids in all provided cadences (become indices for final table)
 
     """
-    args.cadences, args.columns, args.url, args.mast, args.all_tic = [], columns, url, {}, []
+    args.cadences, args.url, args.mast, args.all_tics = [], url, {}, []
     if args.short:
         args.cadences.append('short')
     if args.fast:
@@ -35,7 +37,7 @@ def main(args, url='http://archive.stsci.edu/tess/bulk_downloads/bulk_downloads_
         get_info(df_all, args)
 
 
-def check_input(args):
+def check_input(args, pathall='all_tics.csv', pathsub='selected_tics.csv'):
     """
     Checks input arguments and returns `True` if the pipeline has enough information to run.
     If an input file is provided, this function will also load in the list of targets and save
@@ -45,8 +47,12 @@ def check_input(args):
     ----------
     args : argparse.Namespace
         command-line arguments
-    args.fname : str
+    args.pathall : str
+        path to massive full table with all observing information
+    args.pathsub : str
         path to targets with updated observing information
+    args.stars : List(int)
+        list of targets of interest
 
     Returns
     -------
@@ -55,9 +61,9 @@ def check_input(args):
     """
     if not os.path.isfile(args.input):
         args.input = os.path.join(args.path,args.input)
-    if not os.path.isfile(args.output):
-        args.output = os.path.join(args.path,args.output)
-    args.fname = os.path.join(args.path,'my_observed_tics.csv')
+    if not os.path.isfile(args.pathall):
+        args.pathall = os.path.join(args.path,args.pathall)
+    args.pathsub = os.path.join(args.path,'selected_tics.csv')
     # If no targets are provided via CLI, check for todo file
     if args.stars is None:
         if os.path.exists(args.input):
@@ -71,7 +77,7 @@ def check_input(args):
             print('*** please either provide entries via command line \n    or an input csv file with a list of TICs (via todo.csv) ***\n')
             return False
     if not args.cadences:
-        print("\nERROR: no desired cadences were provided as input.\nPlease use the flags '-f' for fast (i.e. 20-second) and '-s' for short (i.e. 2-minute).\nIf you'd like both you can simply type '-sf'.\n)
+        print("\nERROR: no desired cadences were provided as input.\nPlease use the flags '-f' for fast (i.e. 20-second) and '-s' for short (i.e. 2-minute).\nIf you'd like both you can simply type '-sf'.\n")
     return True
 
 
@@ -88,8 +94,6 @@ def update_observations(args):
     ----------
     args : argparse.Namespace
         command-line arguments
-    args.output : str
-        path to csv file for all observed TESS targets
 
     Returns
     -------
@@ -98,11 +102,13 @@ def update_observations(args):
 
     """
     # get available observing info from MAST
-    args = get_mast_info(args)
+    args = retrieve_observed(args)
+    # get any existing local information to avoid duplicating efforts
+    args = retrieve_existing(args)
     # get new sector information
-    args = get_sectors(args)
+    args = get_new_sectors(args)
     # merge with existing information
-    df = merge_sectors(args)
+    df = combine_sectors(args)
     return df
 
 
@@ -118,7 +124,7 @@ def make_soup(args):
     return s, soup
 
 
-def get_mast_info(args):
+def retrieve_observed(args):
     """
     NEED TO INCORPORATE WITH THE GET_OBSERVED_TICS FUNCTION TO SAVE TIME, SINCE all of this IS ALREADY DONE IN THAT MODULE
 
@@ -126,10 +132,8 @@ def get_mast_info(args):
     ----------
     args : argparse.Namespace
         command-line arguments
-    sectors : List(int)
-        observed TESS target list filtered on the target(s) of interest
-    output : str
-        optional verbose output
+    args.reorder : List(str)
+        current list of observed sectors sorted by ascending order
 
     Returns
     -------
@@ -151,50 +155,43 @@ def get_mast_info(args):
         args.mast['%s%03d'%(cadence[0].upper(),sector)].update({'link':'%s%s'%('/'.join(args.url.split('/')[:3]),l.get('href'))})
     observed = set([x for x in args.mast])
     args.reorder = sorted(observed)
-
-    # If a local observed target list already exists, removes columns that are already in it to save time
-    if os.path.exists(args.output):
-        df = pd.read_csv(args.output)
-        df.set_index('tic', drop=True, inplace=True)
-        columns = df.columns.values.tolist()
-        for key in observed.intersection(set(columns)):
-            del args.mast[key]
-        args.all_tic += df.index.values.tolist()
-    args.new = list(observed.difference(set(columns)))
-    if args.verbose:
-        get_status_output(args)
     return args
 
 
-def get_status_output(args):
+def retrieve_existing(args):
     """
-    TODO: write
+    If local file already exists, see what has been logged so as to not duplicate
+    efforts and hence, require more computation time.
 
     Parameters
     ----------
     args : argparse.Namespace
         command-line arguments
+    args.new : List(str)
+        columns (i.e. sectors/cadences) which are not shared between the two dataframes aka new
+
+    Returns
+    -------
+    args : argparse.NameSpace
+        updated command-line arguments
 
     """
-    if not os.path.exists(args.output):
-        if args.progress:
-            output = '\nCreating full observed target list:'
-        else:
-            output = '\nCreating master list of all observed TESS targets\n *note: this will take a couple minutes if running for the first time'
-    else:
-        if args.new != []:
-            if args.progress:
-                output = '\nUpdating observed target list:'
-            else:
-                output = '\nUpdating master target list w/ %d new sectors'%len(args.new)
-        else:
-            output = '\nNo updates needed at this time'
-            args.progress = False
-    print(output)
-    return 
+    args.new = []
+    # If a local observed target list already exists, removes columns that are already in it to save time
+    if os.path.exists(args.pathall):
+        df = pd.read_csv(args.pathall)
+        df.set_index('tic', drop=True, inplace=True)
+        for key in list(observed.intersection(set(df.columns.values.tolist()))):
+            no = args.mast.pop(key)
+        args.all_tics += df.index.values.tolist()
+        args.new = list(observed.difference(set(df.columns.values.tolist())))
+    # get output if verbose is True
+    if args.verbose:
+        get_status_output(args)
+    return args 
 
 
-def get_sectors(args):
+def get_new_sectors(args):
     """
     Similar to `get_all_sectors`, this module pulls target information for a given sector and cadence
     from MAST. This is used to update the observed target list and therefore only does it for newly added
@@ -213,16 +210,16 @@ def get_sectors(args):
             lines = sh.readlines()
         os.remove('%s/%s'%(args.path,args.mast[key]['link'].split('/')[-1]))
         args.mast[key].update({'tic':[int(line.split()[5].split('-')[2]) for line in lines[1:]]})
-        args.all_tic += args.mast[key]['tic']
+        args.all_tics += args.mast[key]['tic']
         if args.verbose and args.progress:
             pbar.update(1)
     if args.verbose and args.progress:
         pbar.close()
-    args.all_tic = sorted(list(set(args.all_tic)))
+    args.all_tics = sorted(list(set(args.all_tics)))
     return args
 
 
-def merge_sectors(args):
+def combine_sectors(args):
     """
     Combines observed target lists by sectors and cadences into one large list/table. For now,
     it iterates by file so it does not open up multiple files for each target. I am unsure if this 
@@ -239,13 +236,13 @@ def merge_sectors(args):
         full observed TESS target list
 
     """
-    if os.path.exists(args.output):
-        df = pd.read_csv(args.output)
+    if os.path.exists(args.pathall):
+        df = pd.read_csv(args.pathall)
     else:
         df = pd.DataFrame(columns=args.reorder)
     df.set_index('tic', drop=True, inplace=True)
     # Make large csv with all observed targets per sector per cadence
-    tics = sorted(list(set(args.all_tic)))
+    tics = sorted(list(set(args.all_tics)))
     new_df = pd.DataFrame(index=tics, columns=args.reorder)
     for tic in new_df.index.values.tolist():
         # first copy information from existing table
@@ -262,7 +259,7 @@ def merge_sectors(args):
     df = add_target_totals(df, args)
     if args.save:
         df.index.name = 'tic'
-        df.to_csv(args.output)
+        df.to_csv(args.pathall)
         df.reset_index(inplace=True)
     return df
 
@@ -284,6 +281,30 @@ def add_target_totals(df, args, reorder=[]):
         df_new[column] = df[column]
     df = df_new.sort_values(by=['FTOT','STOT'], ascending=[False,False])
     return df
+
+
+def get_info(df, args, output='', line_length=50):
+    """
+    Calls the `get_observed_subset` module to crossmatch the target(s) of interest with 
+    the complete observed target list and displays (i.e. prints) the relevant information 
+    if `args.verbose` is `True` (default).
+
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        complete list of observed TESS targets
+    args : argparse.Namespace
+        command-line arguments
+    output : str
+        optional verbose output
+    line_length : int
+        optional verbose output line width (default is `50`)
+
+    """
+    # Crossmatch full table with targets of interest
+    df = get_observed_subset(df, args)
+    if args.download:
+        make_script(df, args)
 
 
 def get_observed_subset(df, args):
@@ -311,41 +332,17 @@ def get_observed_subset(df, args):
     df = filter_df.copy()
     # Account for any stars not in csv (i.e. long-cadence)
     check = set(args.stars)
-    df_no = pd.DataFrame({'tic':list(check.difference(set(df.tic.values.tolist())))})
+    df_updated = pd.DataFrame({'tic':list(check.difference(set(df.tic.values.tolist())))})
     # Add them to csv and fix format
-    df_all = df.merge(df_no, how='outer', on='tic')
+    df_all = df.merge(df_updated, how='outer', on='tic')
     df = df_all.astype({'tic':'int64'})
     df = df.fillna(False)
     df.set_index('tic', inplace=True)
     # Add total counts
     df = add_target_totals(df, args)
     if args.save:
-        df.to_csv(args.fname)
+        df.to_csv(args.pathsub)
     return df
-
-
-def get_info(df, args, output='', line_length=50):
-    """
-    Calls the `get_observed_subset` module to crossmatch the target(s) of interest with 
-    the complete observed target list and displays (i.e. prints) the relevant information 
-    if `args.verbose` is `True` (default).
-
-    Parameters
-    ----------
-    df : pandas.DataFrame
-        complete list of observed TESS targets
-    args : argparse.Namespace
-        command-line arguments
-    output : str
-        optional verbose output
-    line_length : int
-        optional verbose output line width (default is `50`)
-
-    """
-    # Crossmatch full table with targets of interest
-    df = get_observed_subset(df, args)
-    if args.download:
-        make_script(df)
 
 
 def make_script(df, args, script='#!/bin/sh\n'):
@@ -369,13 +366,46 @@ def make_script(df, args, script='#!/bin/sh\n'):
         for idx in indices:
             find = tics.index(idx)
             script += '%s\n'%lines[find+1]
-    with open('%s/%s.sh'%(args.path,args.fname.split('.csv')[0]), "wb") as file:
+    with open('%s/%s.sh'%(args.path,args.pathsub.split('.csv')[0]), "wb") as file:
         file.write(script)
-    subprocess.call(['%s/%s.sh'%(args.path,args.fname.split('.csv')[0])],shell=True)
+#    subprocess.call(['%s/%s.sh'%(args.path,args.pathsub.split('.csv')[0])],shell=True)
+
+
+def get_status_output(args):
+    """
+    Verbose output for new or updated results from the MAST query
+
+    Parameters
+    ----------
+    args : argparse.Namespace
+        command-line arguments
+
+    """
+    if not os.path.exists(args.pathall):
+        if args.progress:
+            output = '\nCreating full observed target list:'
+        else:
+            output = '\nCreating master list of all observed TESS targets\n *note: this will take a couple minutes if running for the first time'
+    else:
+        if args.new:
+            if args.progress:
+                output = '\nUpdating observed target list:'
+            else:
+                output = '\nUpdating master target list w/ %d new sectors'%len(args.new)
+        else:
+            output = '\nNo updates needed at this time'
+            args.progress = False
+    print(output)
 
 
 def get_final_output(args, output='', line_length=50):
     """
+    Verbose output for individual targets of interest
+
+    Parameters
+    ----------
+    args : argparse.Namespace
+        command-line arguments
 
     """
     for star in args.stars:

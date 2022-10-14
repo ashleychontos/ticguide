@@ -2,6 +2,7 @@ import argparse, os
 
 import ticguide
 from ticguide import pipeline
+exec(open("ticguide/version.py").read())
 
 
 def main():
@@ -12,7 +13,7 @@ def main():
     )
     parser.add_argument('--version',
                         action='version',
-                        version="%(prog)s {}".format(ticguide.__version__),
+                        version="%(prog)s {}".format(__version__),
                         help="print version number and exit",
     )
 
@@ -29,17 +30,17 @@ def main():
                              default=True, 
                              action='store_false',
     )
-    main_parser.add_argument('--file','--in','--input', 
+    main_parser.add_argument('--file','--in','--input','--todo',
                              metavar='path', 
                              help="input list of targets (currently works with txt or csv files)", 
                              dest='input', 
                              default='todo.csv',
     )
-    main_parser.add_argument('--out','--output',
+    main_parser.add_argument('--all','--pathall',
                              metavar='path', 
                              help='path to save the observed TESS table for all targets', 
-                             dest='output', 
-                             default='all_observed.csv',
+                             dest='pathall', 
+                             default='all_tics.csv',
     )
     main_parser.add_argument('--path', 
                              metavar='path', 
@@ -59,6 +60,12 @@ def main():
                              dest='save', 
                              default=True, 
                              action='store_false',
+    )
+    main_parser.add_argument('--sub','--pathsub',
+                             metavar='path', 
+                             help='path to sub-selected sample of observed TESS targets', 
+                             dest='pathsub', 
+                             default='selected_tics.csv',
     )
     main_parser.add_argument('--short','-s', 
                              help='Do not check for short (2-minute) cadence data', 
