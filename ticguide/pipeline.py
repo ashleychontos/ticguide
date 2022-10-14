@@ -154,7 +154,7 @@ def retrieve_observed(args):
             args.mast['%s%03d'%(cadence[0].upper(),sector)] = {}
         args.mast['%s%03d'%(cadence[0].upper(),sector)].update({'link':'%s%s'%('/'.join(args.url.split('/')[:3]),l.get('href'))})
     observed = set([x for x in args.mast])
-    args.reorder = sorted(observed)
+    args.reorder = ['tic'] + sorted(observed)
     return args
 
 
