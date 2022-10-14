@@ -7,7 +7,7 @@ with open("README.md", "r", encoding="utf-8") as file:
 
 setuptools.setup(
     name="ticguide",
-    version=get_property('__version__', 'ticguide'),
+    version=__version__,
     license="MIT",
     author="Ashley Chontos",
     author_email="ashleychontos@astro.princeton.edu",
