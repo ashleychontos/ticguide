@@ -2,6 +2,8 @@
 
 Complementary to the TESS observing tool [``tvguide``](https://github.com/tessgi/tvguide) (see also [WTV](https://heasarc.gsfc.nasa.gov/cgi-bin/tess/webtess/wtv.py)), which tells you if your target *will be* observed by TESS (i.e. on silicon, guaranteed FFI coverage), this tool tells you if your target ***was**** observed by TESS in other cadences (i.e. short- and fast-cadence). * **this draws only from available MAST observations and therefore does not inform you of upcoming sectors.** 
 
+### UPDATE: New 0.5.0 version will even download the data for you!
+
 ## Installation
 You can install using pip:
 
@@ -20,41 +22,55 @@ $ python setup.py install
 You can check your installation with the help command:
 
 ```
-$ ticguide --help
-usage: ticguide [-h] [--file path] [--out path] [--path path] [-p] [-s]
-                [--star [star [star ...]]] [-t] [-v]
+♡ ~ % ticguide --help
+usage: ticguide [-h] [--version] [--download] [--fast] [--file path]
+                [--ll int] [--path path] [--progress] [--save] [--sub path]
+                [--short] [--star [star ...]] [--verbose]
 
-optional arguments:
+ticguide: quick + painless TESS observing information
+
+options:
   -h, --help            show this help message and exit
-  --file path, --in path, --input path
-                        input list of targets (requires csv with 'tic' column
-                        of integer type)
-  --out path, --output path
-                        path to save the observed TESS table for all targets
+  --version             print version number and exit
+
+  --download, -d        Download data for targets of interest
+  --fast, -f            Do not search for fast (20-second) cadence data
+  --file path, --in path, --input path, --todo path
+                        input list of targets (currently works with txt or csv
+                        files)
+  --ll int, --linelength int
+                        line length for CLI output (default=50)
   --path path           path to directory
-  -p, --progress        disable the progress bar
-  -s, --save            disable the saving of output files
-  --star [star [star ...]], --stars [star [star ...]], --tic [star [star ...]]
+  --progress, -p        disable the progress bar
+  --save                Disable the auto-saving of relevant tables, files
+                        and/or scripts for selected targets
+  --sub path, --pathsub path
+                        path to sub-selected sample of observed TESS targets
+  --short, -s           Do not check for short (2-minute) cadence data
+  --star [star ...], --stars [star ...], --tic [star ...]
                         TESS Input Catalog (TIC) IDs
-  -t, --total           include total sectors per target per cadence
-  -v, --verbose         turn off verbose output
+  --verbose, -v         Disable the verbose output
 ```
 
 ## Examples
 
-When running the command for the first time, the program will need to make a local copy of all observed
-TIC IDs (which is currently ~150 Mb, so this will take a few minutes depending on your computer). You have 
-an option to disable the auto-saving of this table and it will still pass the pandas dataframe, but it will 
-need to make this each time you run the program. Therefore if you use this often enough, I recommend letting 
-it save a local csv file.
+The program uses the MAST bulk downloads scripts to assemble a list of observed
+TIC ids to then generate the relevant material the user wants, whether it be the
+observed sectors and/or cadences or the actual data (yes, you read that right!).
 
-Example output when running `ticguide` for the first time with the default settings:
+CLI example (it may take a minute to run through all observed sectors, since it's
+a lot now):
 
 ```
-$ ticguide --star 141810080
+♡ ~ % tiguide --star 141810080
 
-Creating full observed target list:
-100%|███████████████████████████████████████████| 64/64 [01:30<00:00,  1.41s/it]
+
+Grabbing bulk download info from MAST:
+100%|███████████████████████████████████████████| 84/84 [00:46<00:00,  1.81it/s]
+
+Saving target download scripts:
+100%|███████████████████████████████████████████| 1/1 [00:00<00:00, 3302.60it/s]
+
 
 ##################################################
                   TIC 141810080                   
@@ -69,18 +85,24 @@ Creating full observed target list:
 
 11 sectors(s) of fast cadence
 -> observed in sector(s): 29, 30, 31, 32, 33, 34, 
-                          35, 36, 37, 38, 39    
-
+                          35, 36, 37, 38, 39  
 ```
 
-^^ as shown by the progress bar, the program iterated through 64 bash scripts. This 
-makes sense since if TESS is currently on sector 45, which means there are 45 short-cadence 
-and 19 fast-cadence sectors available (-> 45+19=64).
+^^ as shown by the progress bar, the program iterated through 84 bash scripts. This 
+makes sense since if TESS is currently on sector 55, which means there are 55 short-cadence 
+and 29 fast-cadence sectors available (-> 55+29=84).
 
 Command line easily handles multiple TIC IDs by appending them to a list:
 
 ```
-$ ticguide --star 141810080 441462736 188768068
+♡ ~/tess % ticguide --star 141810080 441462736 188768068
+
+Grabbing bulk download info from MAST:
+100%|███████████████████████████████████████████| 84/84 [00:34<00:00,  2.42it/s]
+
+Saving target download scripts:
+100%|███████████████████████████████████████████| 3/3 [00:00<00:00, 6023.41it/s]
+
 
 ##################################################
                   TIC 141810080                   
@@ -111,12 +133,28 @@ $ ticguide --star 141810080 441462736 188768068
                   TIC 188768068                   
 ##################################################
 
-6 sectors(s) of short cadence
--> observed in sector(s): 17, 20, 24, 25, 26, 40
+11 sectors(s) of short cadence
+-> observed in sector(s): 17, 20, 24, 25, 26, 40, 
+                          47, 50, 51, 53, 54    
 
-1 sectors(s) of fast cadence
--> observed in sector(s): 40
+6 sectors(s) of fast cadence
+-> observed in sector(s): 40, 47, 50, 51, 53, 54
 ```
+
+**The new download feature can be seen by the second progress bar. Even if
+you didn't use the download option (`-d` or `--download`), the program assumes
+there is some interest in the selected targets and therefore creates a bash
+script per target in the same way MAST provides bulk download scripts per sector!**
+
+To initialize the scripts, simply run the above command with the `-d` flag:
+
+```
+♡ ~/tess % ticguide --star 141810080 441462736 188768068 -d
+```
+
+... and watch it go. To keep everything nice and neat, it will create
+a parent directory called 'targets' and make one folder per target, where
+the target's light curves will be downloaded to!
 
 If you have many many targets, you can instead provide a single-column txt or csv file, with targets
 listed by their TIC id (one entry per line).
@@ -130,7 +168,7 @@ tic
 441462736
 ```
 
-A boolean table is created using the provided list of targets (TICs) as the table indices and all unique
+A boolean table `selected_tois.csv` is created using the provided list of targets (TICs) as the table indices and all unique
 combinations of the cadences and sectors as columns, where `True` would mean a given TIC was observed in the listed
 cadence and sector. For example, the column "S027" means short-cadence sector 27 observations, whereas "F027" is the 
 same sector but in fast cadence.
