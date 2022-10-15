@@ -2,7 +2,7 @@ import argparse, os
 
 import ticguide
 from ticguide import pipeline
-exec(open("ticguide/version.py").read())
+from ticguide import __version__, PATHDIR
 
 
 def main():
@@ -17,7 +17,7 @@ def main():
                         help="print version number and exit",
     )
 
-    main_parser = argparse.ArgumentParser()
+    main_parser = parser.add_argument_group()
     main_parser.add_argument('--download','-d', 
                              help='Download data for targets of interest', 
                              dest='download', 
@@ -36,18 +36,19 @@ def main():
                              dest='input', 
                              default='todo.csv',
     )
-    main_parser.add_argument('--all','--pathall',
-                             metavar='path', 
-                             help='path to save the observed TESS table for all targets', 
-                             dest='pathall', 
-                             default='all_tics.csv',
+    main_parser.add_argument('--ll','--linelength',
+                             metavar='int',
+                             help="line length for CLI output (default=50)",
+                             type=int,
+                             dest='linelength',
+                             default=50,
     )
     main_parser.add_argument('--path', 
                              metavar='path', 
                              help='path to directory', 
                              type=str, 
                              dest='path', 
-                             default=os.path.join(os.path.abspath(os.getcwd()),''),
+                             default=PATHDIR,
     )
     main_parser.add_argument('--progress','-p', 
                              help='disable the progress bar', 
@@ -56,7 +57,7 @@ def main():
                              action='store_false',
     )
     main_parser.add_argument('--save', 
-                             help='disable the saving of output files', 
+                             help='Disable the auto-saving of relevant tables, files and/or scripts for selected targets', 
                              dest='save', 
                              default=True, 
                              action='store_false',
@@ -87,9 +88,9 @@ def main():
                              default=True, 
                              action='store_false',
     )
-    main_parser.set_defaults(func=pipeline.main)
+    parser.set_defaults(func=pipeline.main)
 
-    args = main_parser.parse_args()
+    args = parser.parse_args()
     args.func(args)
 
 
