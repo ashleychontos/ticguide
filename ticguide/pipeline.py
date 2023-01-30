@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 from tqdm import tqdm
 from bs4 import BeautifulSoup
+from collections import Counter
 import argparse, subprocess, requests, glob, os, re
 
 
@@ -26,15 +27,15 @@ def main(args, url='http://archive.stsci.edu/tess/bulk_downloads/bulk_downloads_
     """
     args.cadences, args.url, args.mast, args.all_tics, args.script = [], url, {}, [], script
     # Check that the input is correct first
-    if check_input(args):
-        # Retrieve all available TESS data from MAST
-        df = get_information(args)
-        # Get verbose output
-        if args.verbose:
-            get_final_output(df, args)
+    check_input(args)
+    # Retrieve all available TESS data from MAST
+    args = get_information(args)
+    # Get verbose output
+    if args.verbose:
+        get_final_output(args)
 
 
-def check_input(args, pathall='all_tics.csv', pathsub='selected_tics.csv'):
+def check_input(args, totals=True, fileall='all_tics.csv', fileselect='selected_tics.csv'):
     """
     Checks input arguments and returns `True` if the pipeline has enough information to run.
     If an input file is provided, this function will also load in the list of targets and save
@@ -56,39 +57,38 @@ def check_input(args, pathall='all_tics.csv', pathsub='selected_tics.csv'):
     bool
 
     """
-    if not os.path.isfile(args.input):
-        args.input = os.path.join(args.path,args.input)
-    args.pathsub = os.path.join(args.path,'selected_tics.csv')
+    if not os.path.isfile(args.fileinput):
+        args.pathinput = os.path.join(args.path,args.fileinput)
+    args.pathall = os.path.join(args.path,fileall)
+    args.pathselect = os.path.join(args.path,fileselect)
     # If no targets are provided via CLI, check for todo file
-    if args.stars is None:
-        if os.path.exists(args.input):
-            if args.input.split('/')[-1].split('.')[-1] == 'csv' or args.input.split('/')[-1].split('.')[-1] == 'txt':
-                with open (args.input, "r") as f:
-                    args.stars = [int(line.strip()) for line in f.readlines() if line[0].isnumeric()]
-            else:
-                print('\nERROR: did not understand input file type. Please try again.\n')
-                return False
-        else:
-            print('\nERROR: no targets were provided')
-            print('*** please either provide entries via command line \n    or an input csv file with a list of TICs (via todo.csv) ***\n')
-            return False
+    if args.stars == [] and os.path.exists(args.pathinput):
+        if args.input.split('/')[-1].split('.')[-1] == 'csv' or args.input.split('/')[-1].split('.')[-1] == 'txt':
+            with open (args.pathinput, "r") as f:
+                args.stars = [int(line.strip()) for line in f.readlines() if line[0].isnumeric()]
     if args.short:
         args.cadences.append('short')
     if args.fast:
         args.cadences.append('fast')
     if not args.cadences:
         print("\nERROR: no desired cadences were provided as input.\nPlease use the flags '-f' for fast (i.e. 20-second) and '-s' for short (i.e. 2-minute).\nIf you'd like both you can simply type '-sf'.\n")
-        return False
+        return
     # set up main dictionary
-    tics, args.stars = list(np.copy(args.stars)), {}
-    for tic in tics:
-        args.stars[tic]={}
-        args.stars[tic]['data'], args.stars[tic]['script'] = [], '#!/bin/sh\n'
-    if args.save and not os.path.exists(os.path.join(args.path,'targets')):
-        os.makedirs(os.path.join(args.path,'targets'))
-        for star in args.stars:
-            os.makedirs(os.path.join(args.path,'targets','%s'%str(star)))
-    return True
+    if args.stars:
+        tics, args.stars = list(np.copy(args.stars)), {}
+        for tic in tics:
+            args.stars[tic]={}
+            args.stars[tic]['data'], args.stars[tic]['script'] = [], '#!/bin/sh\n'
+        if args.save:
+            if not os.path.exists(os.path.join(args.path,'targets')):
+                os.makedirs(os.path.join(args.path,'targets'))
+            for star in args.stars:
+                os.makedirs(os.path.join(args.path,'targets','%s'%str(star)))
+    # if totals are desired
+    if args.totals:
+        args.tics={}
+        for cadence in args.cadences:
+            args.tics[cadence[0].upper()] = []
 
 
 def get_information(args):
@@ -107,15 +107,31 @@ def get_information(args):
     df : pandas.DataFrame
         table with observing information for relevant TICs
 
+    If args.save is True, will save a local csv with observing information as well as a
+    bash script per target for downloading, which will automatically initialize if 
+    args.download == True
+
+    Parameters
+    ----------
+    args : argparse.Namespace
+        command-line arguments
+
+    Returns
+    -------
+    df : pandas.DataFrame
+        table with observing information for relevant TICs
+
     """
     # get available observing info from MAST
-    args = get_info(args)
+    args = get_observed(args)
     # merge with existing information
-    df = save_info(args)
-    return df
+    save_totals(args)
+    args = save_select(args)
+    save_scripts(args)
+    return args
 
 
-def get_info(args):
+def get_observed(args):
     """
     Iterates through all sectors and cadences from MAST to record if any targets of interest
     were observed and in so, in what sector(s) and cadence(s).
@@ -216,6 +232,8 @@ def check_targets(key, lines, args):
 
     """
     tics = [int(line.split()[5].split('-')[2]) for line in lines]
+    if args.totals:
+        args.tics[key[0].upper()] += tics
     for tic in args.stars:
         if tic in tics:
             args.stars[tic]['data'].append(key)
@@ -223,29 +241,25 @@ def check_targets(key, lines, args):
     return args
 
 
-def save_info(args):
+def save_totals(args, d={}, types={}):
     """
-    If args.save is True, will save a local csv with observing information as well as a
-    bash script per target for downloading, which will automatically initialize if 
-    args.download == True
-
-    Parameters
-    ----------
-    args : argparse.Namespace
-        command-line arguments
-
-    Returns
-    -------
-    df : pandas.DataFrame
-        table with observing information for relevant TICs
 
     """
-    df = save_table(args)
-    save_scripts(args)
-    return df
+    if args.totals:
+        for cadence in args.cadences:
+            d.update({cadence:Counter(args.tics[cadence[0].upper()])})
+            types.update({cadence:'int64'})
+        df = pd.DataFrame(d)
+        df.reset_index(drop=False, inplace=True)
+        df.rename(columns={'index':'tic'}, inplace=True)
+        df = df.fillna(0)
+        df = df.astype(types)
+        df = df.sort_values(by=['fast','short'], ascending=[False,False])
+        if args.save:
+            df.to_csv(args.pathall, index=False)
 
 
-def save_table(args):
+def save_select(args):
     """
     Combines observed target lists by sectors and cadences into one large list/table. For now,
     it iterates by file so it does not open up multiple files for each target. I am unsure if this 
@@ -262,20 +276,22 @@ def save_table(args):
         table with observing information for relevant TICs
 
     """
-    df = pd.DataFrame(columns=['tic']+list(args.mast.keys()))
-    for i, star in enumerate(args.stars):
-        df.loc[i,'tic'] = star
-        for col in list(args.mast.keys()):
-            if col in args.stars[star]['data']:
-                df.loc[i,col] = True
-    # Fill nan values
-    df_new = df.fillna(False)
-    # Get target totals
-    df = add_target_totals(df_new, args)
-    if args.save:
-        df.set_index('tic', inplace=True, drop=True)
-        df.to_csv(args.pathsub)
-    return df
+    if args.stars:
+        df = pd.DataFrame(columns=['tic']+list(args.mast.keys()))
+        for i, star in enumerate(args.stars):
+            df.loc[i,'tic'] = star
+            for col in list(args.mast.keys()):
+                if col in args.stars[star]['data']:
+                    df.loc[i,col] = True
+        # Fill nan values
+        df_new = df.fillna(False)
+        # Get target totals
+        df = add_target_totals(df_new, args)
+        if args.save:
+            df.set_index('tic', inplace=True, drop=True)
+            df.to_csv(args.pathselect)
+        args.df = df.copy()
+    return args
 
 
 def add_target_totals(df, args, reorder=['tic']):
@@ -315,7 +331,7 @@ def save_scripts(args):
         command-line arguments
 
     """
-    if args.save:
+    if args.save and args.stars:
         if args.verbose and args.progress:
             print('\nSaving target download scripts:')
             pbar = tqdm(total=len(args.stars))
@@ -327,7 +343,7 @@ def save_scripts(args):
         if args.verbose and args.progress:
             pbar.close()
             print()
-    init_scripts(args)
+        init_scripts(args)
 
 
 def init_scripts(args):
@@ -352,8 +368,7 @@ def init_scripts(args):
         print('\n\n -- complete --\n')
 
 
-
-def get_final_output(df, args, output='', linelength=50):
+def get_final_output(args, output='', linelength=50):
     """
     Verbose output for individual targets of interest
 
@@ -368,9 +383,9 @@ def get_final_output(df, args, output='', linelength=50):
         output+='\n##################################################\n%s\n##################################################\n'%tic.center(args.linelength)
         for cadence in args.cadences:
             x, count = '', 0
-            filter_cols = [col for col in df.columns.values.tolist() if col.startswith('%s'%cadence[0].upper()) and not col.endswith('T')]
+            filter_cols = [col for col in args.df.columns.values.tolist() if col.startswith('%s'%cadence[0].upper()) and not col.endswith('T')]
             for column in filter_cols:
-                if df.loc[star,column]:
+                if args.df.loc[star,column]:
                     x += '%d, '%int(column[1:])
                     count+=1
             if count != 0:

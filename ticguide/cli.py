@@ -5,6 +5,7 @@ from ticguide import pipeline
 from ticguide import __version__, PATHDIR
 
 
+
 def main():
 
     parser = argparse.ArgumentParser(
@@ -30,11 +31,23 @@ def main():
                              default=True, 
                              action='store_false',
     )
-    main_parser.add_argument('--file','--in','--input','--todo',
-                             metavar='path', 
+    main_parser.add_argument('--fileinput','--input',
+                             metavar='str', 
                              help="input list of targets (currently works with txt or csv files)", 
-                             dest='input', 
+                             dest='fileinput', 
                              default='todo.csv',
+    )
+    main_parser.add_argument('--fileselect','--select',
+                             metavar='str', 
+                             help='filename for sub-selected sample of observed TESS targets', 
+                             dest='fileselect', 
+                             default='selected_tics.csv',
+    )
+    main_parser.add_argument('--fileall','--all',
+                             metavar='str', 
+                             help='path to total sample of observed TESS targets', 
+                             dest='fileall', 
+                             default='all_tics.csv',
     )
     main_parser.add_argument('--ll','--linelength',
                              metavar='int',
@@ -44,7 +57,7 @@ def main():
                              default=50,
     )
     main_parser.add_argument('--path', 
-                             metavar='path', 
+                             metavar='str', 
                              help='path to directory', 
                              type=str, 
                              dest='path', 
@@ -62,12 +75,6 @@ def main():
                              default=True, 
                              action='store_false',
     )
-    main_parser.add_argument('--sub','--pathsub',
-                             metavar='path', 
-                             help='path to sub-selected sample of observed TESS targets', 
-                             dest='pathsub', 
-                             default='selected_tics.csv',
-    )
     main_parser.add_argument('--short','-s', 
                              help='Do not check for short (2-minute) cadence data', 
                              dest='short', 
@@ -75,12 +82,18 @@ def main():
                              action='store_false',
     )
     main_parser.add_argument('--star','--stars','--tic', 
-                             metavar='star', 
+                             metavar='int', 
                              help='TESS Input Catalog (TIC) IDs', 
                              type=int, 
                              dest='stars', 
                              nargs='*', 
-                             default=None,
+                             default=[],
+    )
+    main_parser.add_argument('--totals','-t', 
+                             help='Save cadence totals (by TIC ID)', 
+                             dest='totals', 
+                             default=True,
+                             action='store_false',
     )
     main_parser.add_argument('--verbose','-v', 
                              help='Disable the verbose output', 
