@@ -22,10 +22,11 @@ $ python setup.py install
 You can check your installation with the help command:
 
 ```
-♡ ~ % ticguide --help
-usage: ticguide [-h] [--version] [--download] [--fast] [--file path]
-                [--ll int] [--path path] [--progress] [--save] [--sub path]
-                [--short] [--star [star ...]] [--verbose]
+♡ ~/tics % ticguide --help
+usage: ticguide [-h] [--version] [--download] [--fast] [--fileinput str]
+                [--fileselect str] [--fileall str] [--ll int] [--path str]
+                [--progress] [--save] [--short] [--star [int ...]] [--totals]
+                [--verbose]
 
 ticguide: quick + painless TESS observing information
 
@@ -35,20 +36,24 @@ options:
 
   --download, -d        Download data for targets of interest
   --fast, -f            Do not search for fast (20-second) cadence data
-  --file path, --in path, --input path, --todo path
+  --fileinput str, --input str
                         input list of targets (currently works with txt or csv
                         files)
+  --fileselect str, --select str
+                        filename for sub-selected sample of observed TESS
+                        targets
+  --fileall str, --all str
+                        path to total sample of observed TESS targets
   --ll int, --linelength int
                         line length for CLI output (default=50)
-  --path path           path to directory
+  --path str            path to directory
   --progress, -p        disable the progress bar
   --save                Disable the auto-saving of relevant tables, files
                         and/or scripts for selected targets
-  --sub path, --pathsub path
-                        path to sub-selected sample of observed TESS targets
   --short, -s           Do not check for short (2-minute) cadence data
-  --star [star ...], --stars [star ...], --tic [star ...]
+  --star [int ...], --stars [int ...], --tic [int ...]
                         TESS Input Catalog (TIC) IDs
+  --totals, -t          Save cadence totals (by TIC ID)
   --verbose, -v         Disable the verbose output
 ```
 
